@@ -1,5 +1,5 @@
 
-require [[tests.helper]]
+require [[spec.helper]]
 
 describe('', function ()
 
@@ -72,7 +72,7 @@ describe('', function ()
     assert.equal(addr == ip.parsev4('10.4.5.0', 16), false)
     assert.equal(addr == ip.parsev4('10.4.5.0', 15), true)
     assert.equal(addr == ip.parsev4('10.5.0.2', 32), false)
-    assert.equal(addr == addr:cidr(32),               true)
+    assert.equal(addr == addr:cidr(32),              true)
   end)
 
   it('detects reserved IPv4 networks', function ()
