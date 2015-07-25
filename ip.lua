@@ -182,15 +182,15 @@ end
 -- @return boolean, [string]
 
 local function parse_v6(string, parts, octets, cidr)
-  local __, part, l_sep, count, double, length, index, last, string, octets_st, _, _cidr =
+  local nd_sep, part, l_sep, count, double, length, index, last, string, octets_st, sep, _cidr =
     '', '', false, 1, 0, 0, 0, 0, match(string, _parts_with_octets)
 
   if not string or EMPTY == string then
     return false, 'invalid ipv6 format'
   end
 
-  if #octets_st == #_ then
-    string    = string .. _
+  if #octets_st == #sep then
+    string = string .. sep
   else
     local err, message = parse_v4(octets_st, octets)
     if not err then
@@ -198,19 +198,19 @@ local function parse_v6(string, parts, octets, cidr)
     end
   end
 
-  _cidr, length, index, last, _, part, __ =
-    tonumber(_cidr=='' and (cidr and cidr or 128) or _cidr), len(string), find(string, _part)
+  _cidr, length, index, last, sep, part, nd_sep =
+    tonumber(_cidr==EMPTY and (cidr and cidr or 128) or _cidr), len(string), find(string, _part)
 
   while index and index <= length do
-    if _ == COLON and __ == COLON then
+    if sep == COLON and nd_sep == COLON then
       if part == EMPTY or l_sep then
         if double > 0 then
           return false, 'string is not formatted like ip address'
         end
         double = count
       end
-    elseif _ == COLON or __ == COLON then
-      if l_sep and _ == COLON then
+    elseif sep == COLON or nd_sep == COLON then
+      if l_sep and sep == COLON then
         if double > 0 then
           return false, 'string is not formatted like ip address'
         end
@@ -220,8 +220,8 @@ local function parse_v6(string, parts, octets, cidr)
 
     insert(parts, tonumber(part == EMPTY and 0 or part, 16))
 
-    l_sep, count, index, last, _, part, __ =
-      __ == COLON, count + 1, find(string, _part, last + 1)
+    l_sep, count, index, last, sep, part, nd_sep =
+      nd_sep == COLON, count + 1, find(string, _part, last + 1)
   end
 
   if #octets > 0 then

@@ -27,7 +27,7 @@ local function trust10x (addr)
   return find(addr, '10.', 1, true) == 1
 end
 
-describe('forwarded(req) #fwd', function()
+describe('forwarded(req)', function()
 
   local forwarded, req
 
@@ -90,7 +90,7 @@ describe('proxyaddr(req, trust)', function ()
       end)
     end)
 
-    describe('trust #trustful', function ()
+    describe('trust', function ()
       it('should be required', function ()
         req = create_req('127.0.0.1')
         assert.has_error(bind(proxyaddr, req), 'trust argument is required')
@@ -153,11 +153,10 @@ describe('proxyaddr(req, trust)', function ()
         assert.has_error(bind(proxyaddr, req, '10.0.0.1/internet'), 'invalid range on address')
         assert.has_error(bind(proxyaddr, req, '10.0.0.1/6000'),     'invalid range on address')
         assert.has_error(bind(proxyaddr, req, '::1/6000'),          'invalid range on address')
-        --assert.has_error(bind(proxyaddr, req, '::ffff:a00:2/136')   'invalid range on address')
         assert.has_error(bind(proxyaddr, req, '::ffff:a00:2/46'),   'invalid range on address')
       end)
 
-      it('should be invoked as trust(addr, i) #tuga', function ()
+      it('should be invoked as trust(addr, i)', function ()
         local log = {}
         req       = create_req('127.0.0.1', {
           ['x-forwarded-for'] = '192.168.0.1, 10.0.0.1'
@@ -165,7 +164,6 @@ describe('proxyaddr(req, trust)', function ()
 
         proxyaddr(req, function (addr, i)
           insert(log, {addr, i}) return #log
-          --return #log > 1
         end)
 
         assert.same(log, {{'127.0.0.1', 1}, {'10.0.0.1', 2}})
@@ -194,7 +192,7 @@ describe('proxyaddr(req, trust)', function ()
     end)
   end)
 
-  describe('with none trusted #tt', function ()
+  describe('with none trusted', function ()
     it('should return socket address with no headers', function ()
       req = create_req('127.0.0.1')
       assert.equal(proxyaddr(req, none), '127.0.0.1')
@@ -208,7 +206,7 @@ describe('proxyaddr(req, trust)', function ()
     end)
   end)
 
-  describe('with some trusted #td', function ()
+  describe('with some trusted', function ()
     it('should return socket address with no headers', function ()
       req = create_req('127.0.0.1')
       assert.equal(proxyaddr(req, trust10x), '127.0.0.1')
@@ -243,7 +241,7 @@ describe('proxyaddr(req, trust)', function ()
     end)
   end)
 
-  describe('when given array #tr', function ()
+  describe('when given array', function ()
     it('should accept literal IP addresses', function ()
       req = create_req('10.0.0.1', {
         ['x-forwarded-for'] = '192.168.0.1, 10.0.0.2'
@@ -280,7 +278,7 @@ describe('proxyaddr(req, trust)', function ()
     end)
   end)
 
-  describe('when given IPv4 addresses #tp', function ()
+  describe('when given IPv4 addresses', function ()
     it('should accept literal IP addresses', function ()
       req = create_req('10.0.0.1', {
         ['x-forwarded-for'] = '192.168.0.1, 10.0.0.2'
@@ -292,7 +290,7 @@ describe('proxyaddr(req, trust)', function ()
       req = create_req('10.0.0.1', {
         ['x-forwarded-for'] = '192.168.0.1, 10.0.0.200'
       })
-      --assert.equal(proxyaddr(req, '10.0.0.2/26'), '10.0.0.200')
+      assert.equal(proxyaddr(req, '10.0.0.2/26'), '10.0.0.200')
     end)
 
     it('should accept netmask notation', function ()
@@ -303,7 +301,7 @@ describe('proxyaddr(req, trust)', function ()
     end)
   end)
 
-  describe('when given IPv6 addresses #tq', function ()
+  describe('when given IPv6 addresses', function ()
     it('should accept literal IP addresses', function ()
       req = create_req('fe80::1', {
         ['x-forwarded-for'] = '2002:c000:203::1, fe80::2'
@@ -392,7 +390,7 @@ describe('proxyaddr(req, trust)', function ()
       assert.equal(proxyaddr(req, 'linklocal'), '2002:c000:203::1')
     end)
 
-    it('should accept multiple pre-defined names #fuck', function ()
+    it('should accept multiple pre-defined names', function ()
       req = create_req('::1', {
         ['x-forwarded-for'] = '2002:c000:203::1, fe80::2'
       })
@@ -408,7 +406,7 @@ describe('proxyaddr(req, trust)', function ()
       assert.equal(proxyaddr(req, '127.0.0.1'), 'proxy')
     end)
 
-    it('should provide all values to function #shit', function ()
+    it('should provide all values to function', function ()
       local log = {}
       req       = create_req('127.0.0.1', {
         ['x-forwarded-for'] = 'myrouter, 127.0.0.1, proxy'
@@ -416,7 +414,6 @@ describe('proxyaddr(req, trust)', function ()
 
       proxyaddr(req, function (addr, i)
         insert(log, {addr, i}) return #log
-        --return #log > 1
       end)
 
       assert.same(log, {
@@ -444,13 +441,13 @@ describe('proxyaddr.all(req, [trust])', function ()
 
   describe('arguments', function ()
     describe('req', function ()
-      it('should be required #all', function ()
+      it('should be required', function ()
         assert.has_error(proxyall, 'argument req is required')
       end)
     end)
 
     describe('trust', function ()
-      it('should be optional #all', function ()
+      it('should be optional', function ()
         req = create_req('127.0.0.1')
         assert.not_error(bind(proxyall, req))
       end)
@@ -458,21 +455,21 @@ describe('proxyaddr.all(req, [trust])', function ()
   end)
 
   describe('with no headers', function ()
-    it('should return socket address #all', function()
+    it('should return socket address', function()
       req = create_req('127.0.0.1')
       assert.same(proxyall(req), {'127.0.0.1'})
     end)
   end)
 
   describe('with x-forwarded-for header', function ()
-    it('should include x-forwarded-for #all', function ()
+    it('should include x-forwarded-for', function ()
       req = create_req('127.0.0.1', {
         ['x-forwarded-for'] = '10.0.0.1'
       })
       assert.same(proxyall(req), {'127.0.0.1', '10.0.0.1'})
     end)
 
-    it('should include x-forwarded-for in correct order #all', function ()
+    it('should include x-forwarded-for in correct order', function ()
       req = create_req('127.0.0.1', {
         ['x-forwarded-for'] = '10.0.0.1, 10.0.0.2'
       })
@@ -481,14 +478,14 @@ describe('proxyaddr.all(req, [trust])', function ()
   end)
 
   describe('with trust argument', function ()
-    it('should stop at first untrusted #all', function ()
+    it('should stop at first untrusted', function ()
       req = create_req('127.0.0.1', {
         ['x-forwarded-for'] = '10.0.0.1, 10.0.0.2'
       })
       assert.same(proxyall(req, '127.0.0.1'), {'127.0.0.1', '10.0.0.2'})
     end)
 
-    it('should be only socket address for no trust #all', function ()
+    it('should be only socket address for no trust', function ()
       req = create_req('127.0.0.1', {
         ['x-forwarded-for'] = '10.0.0.1, 10.0.0.2'
       })
@@ -511,48 +508,48 @@ describe('proxyaddr.compile(trust)', function ()
 
   describe('arguments', function ()
     describe('trust', function ()
-      it('should be required #any', function ()
+      it('should be required', function ()
         assert.has_error(bind(compile), 'argument is required')
       end)
 
-      it('should accept an array #any', function ()
+      it('should accept an array', function ()
         assert.is.Function(compile({}))
       end)
 
-      it('should accept a string #any', function ()
+      it('should accept a string', function ()
         assert.is.Function(compile('127.0.0.1'))
       end)
 
-      it('should reject a number #any', function ()
+      it('should reject a number', function ()
         assert.has_error(bind(compile, 42), 'unsupported trust argument')
       end)
 
-      it('should accept IPv4 #any', function ()
+      it('should accept IPv4', function ()
         assert.is.Function(compile('127.0.0.1'))
       end)
 
-      it('should accept IPv6 #any', function ()
+      it('should accept IPv6', function ()
         assert.is.Function(compile('::1'))
       end)
 
-      it('should accept IPv4-style IPv6 #any', function ()
+      it('should accept IPv4-style IPv6', function ()
         assert.is.Function(compile('::ffff:127.0.0.1'))
       end)
 
-      it('should accept pre-defined names #any', function ()
+      it('should accept pre-defined names', function ()
         assert.is.Function(compile('loopback'))
       end)
 
-      it('should accept pre-defined names in array #any', function ()
+      it('should accept pre-defined names in array', function ()
         assert.is.Function(compile({'loopback', '10.0.0.1'}))
       end)
 
-      it('should reject non-IP #any', function ()
+      it('should reject non-IP', function ()
         assert.has_error(bind(compile, 'blargh'), 'invalid IP address')
         assert.has_error(bind(compile, '-1'),     'invalid IP address')
       end)
 
-      it('should reject bad CIDR #any', function ()
+      it('should reject bad CIDR', function ()
         assert.has_error(bind(compile, '10.0.0.1/6000'),    'invalid range on address')
         assert.has_error(bind(compile, '::1/6000'),         'invalid range on address')
         assert.has_error(bind(compile, '::ffff:a00:2/136'), 'invalid range on address')
