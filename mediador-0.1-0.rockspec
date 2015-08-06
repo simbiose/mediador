@@ -13,7 +13,7 @@ source = {
 }
 
 dependencies = {
-  "lua >= 5.1, < 5.3", "LuaBitOp"
+  "LuaBitOp"
 }
 
 build = {

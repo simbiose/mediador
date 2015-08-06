@@ -143,17 +143,23 @@ describe('proxyaddr(req, trust)', function ()
 
       it('should reject non-IP', function ()
         req = create_req('127.0.0.1')
-        assert.has_error(bind(proxyaddr, req, 'blargh'),        'invalid IP address')
-        assert.has_error(bind(proxyaddr, req, '10.0.300.1/16'), 'invalid IP address')
-        assert.has_error(bind(proxyaddr, req, '-1'),            'invalid IP address')
+        assert.has_error(bind(proxyaddr, req, 'blargh'),        'invalid IP address: blargh')
+        assert.has_error(bind(proxyaddr, req, '10.0.300.1/16'), 'invalid IP address: 10.0.300.1')
+        assert.has_error(bind(proxyaddr, req, '-1'),            'invalid IP address: -1')
       end)
 
       it('should reject bad CIDR', function ()
         req = create_req('127.0.0.1')
-        assert.has_error(bind(proxyaddr, req, '10.0.0.1/internet'), 'invalid range on address')
-        assert.has_error(bind(proxyaddr, req, '10.0.0.1/6000'),     'invalid range on address')
-        assert.has_error(bind(proxyaddr, req, '::1/6000'),          'invalid range on address')
-        assert.has_error(bind(proxyaddr, req, '::ffff:a00:2/46'),   'invalid range on address')
+        assert.has_error(bind(proxyaddr, req, '::1/6000'), 'invalid range on address: ::1/6000')
+        assert.has_error(
+          bind(proxyaddr, req, '10.0.0.1/internet'), 'invalid range on address: 10.0.0.1/internet'
+        )
+        assert.has_error(
+          bind(proxyaddr, req, '10.0.0.1/6000'), 'invalid range on address: 10.0.0.1/6000'
+        )
+        assert.has_error(
+          bind(proxyaddr, req, '::ffff:a00:2/46'), 'invalid range on address: ::ffff:a00:2/46'
+        )
       end)
 
       it('should be invoked as trust(addr, i)', function ()
@@ -545,15 +551,15 @@ describe('proxyaddr.compile(trust)', function ()
       end)
 
       it('should reject non-IP', function ()
-        assert.has_error(bind(compile, 'blargh'), 'invalid IP address')
-        assert.has_error(bind(compile, '-1'),     'invalid IP address')
+        assert.has_error(bind(compile, 'blargh'), 'invalid IP address: blargh')
+        assert.has_error(bind(compile, '-1'),     'invalid IP address: -1')
       end)
 
       it('should reject bad CIDR', function ()
-        assert.has_error(bind(compile, '10.0.0.1/6000'),    'invalid range on address')
-        assert.has_error(bind(compile, '::1/6000'),         'invalid range on address')
-        assert.has_error(bind(compile, '::ffff:a00:2/136'), 'invalid range on address')
-        assert.has_error(bind(compile, '::ffff:a00:2/46'),  'invalid range on address')
+        assert.has_error(bind(compile, '::1/6000'),         'invalid range on address: ::1/6000')
+        assert.has_error(bind(compile, '10.0.0.1/6000'),    'invalid range on address: 10.0.0.1/6000')
+        assert.has_error(bind(compile, '::ffff:a00:2/136'), 'invalid range on address: ::ffff:a00:2/136')
+        assert.has_error(bind(compile, '::ffff:a00:2/46'),  'invalid range on address: ::ffff:a00:2/46')
       end)
     end)
   end)

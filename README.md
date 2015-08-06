@@ -1,5 +1,7 @@
-mediador
-=======
+[![Build Status](https://travis-ci.org/simbiose/mediador.png?branch=master)](https://travis-ci.org/simbiose/mediador)
+[![License](http://img.shields.io/badge/License-MIT-brightgreen.svg)](LICENSE)
+
+# mediador
 
 mediador, determine address of proxied request and ip handling, see [website](http://rocks.simbio.se/mediador) for details
 

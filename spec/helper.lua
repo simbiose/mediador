@@ -31,7 +31,7 @@ local function safe_equals(state, args)
   assert(args.n > 2, say('assertion.internal.argtolittle', {'safe_equals', 3, tostring(args.n)}))
   assert(
     'boolean' == type(args[2]),
-    say('assertion.internal.badargtype', {'safe_equals', 'boolean', type(args[2])})
+    say('assertion.internal.badargtype', {2, 'safe_equals', 'boolean', type(args[2])})
   )
   assert(args[2] == true, say('assertion.error.negative', {args[3]}))
 
@@ -52,7 +52,7 @@ local function safe_same(state, args)
   assert(args.n > 2, say('assertion.internal.argtolittle', {'safe_same', 3, tostring(args.n)}))
   assert(
     'boolean' == type(args[2]),
-    say('assertion.internal.badargtype', {'safe_same', 'boolean', type(args[2])})
+    say('assertion.internal.badargtype', {2, 'safe_same', 'boolean', type(args[2])})
   )
   assert(args[2] == true, say('assertion.error.negative', {args[3]}))
 
@@ -79,7 +79,7 @@ local function safe_fail(state, args)
   assert(args.n > 2, say('assertion.internal.argtolittle', {'safe_fail', 3, tostring(args.n)}))
   assert(
     'boolean' == type(args[2]),
-    say('assertion.internal.badargtype', {'safe_fail', 'boolean', type(args[1])})
+    say('assertion.internal.badargtype', {2, 'safe_fail', 'boolean', type(args[1])})
   )
   assert(args[3] == args[1], say('assertion.error.positive', {args[3], args[1]}))
   return true
