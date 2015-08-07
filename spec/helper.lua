@@ -4,10 +4,11 @@
 -- @license   MIT
 -- @copyright Simbiose 2015
 
-local say, util, assert =
-  require [[say]], require [[luassert.util]], require [[luassert.assert]]
+local table, say, util, assert =
+  require [[table]], require [[say]], require [[luassert.util]], require [[luassert.assert]]
 
-local remove, insert, deep_cmp = util.tremove, util.tinsert, util.deepcompare
+local unpack, remove, insert, deep_cmp =
+  table.unpack or unpack, util.tremove, util.tinsert, util.deepcompare
 
 -- remove ?!
 --
