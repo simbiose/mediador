@@ -16,7 +16,8 @@ branches:
 before_install:
   - source <(curl -s http://rocks.simbio.se/travis.sh 2> /dev/null)
   - luarocks install busted
-  - luarocks install LuaBitOp
+
+install: luarocks install *.rockspec --only-deps
 
 script: busted
 

@@ -5,15 +5,23 @@
 -- @license   MIT
 -- @copyright Simbiose 2015
 
-local math, string, bit, table =
-  require [[math]], require [[string]], require [[bit]], require [[table]]
+local math, string, table, bit_available, bit =
+  require [[math]], require [[string]], require [[table]], pcall(require, 'bit')
 
-local modf, len, match, find, format, concat, insert, band, bor, rshift, lshift, type,
+-- yey! Lua 5.3 bitwise keywords available
+if not bit_available and _VERSION == 'Lua 5.3' then
+  bit = assert(load([[return {
+    band   = function (a, b) return a & b end,
+    bor    = function (a, b) return a | b end,
+    rshift = function (a, b) return a >> b end,
+    lshift = function (a, b) return a << b end
+  }]]))()
+end
+
+local ip, modf, len, match, find, format, concat, insert, band, bor, rshift, lshift, type,
   assert, error, tonumber, pcall, setmetatable =
-  math.modf, string.len, string.match, string.find, string.format, table.concat, table.insert,
+  {}, math.modf, string.len, string.match, string.find, string.format, table.concat, table.insert,
   bit.band, bit.bor, bit.rshift, bit.lshift, type, assert, error, tonumber, pcall, setmetatable
-
-local ip = {}
 
 local _octets, _octet, _part, _parts_with_octets, EMPTY, COLON, ZERO =
   '^((0?[xX]?)[%da-fA-F]+)%.((0?[xX]?)[%da-fA-F]+)%.((0?[xX]?)[%da-fA-F]+)%.((0?[xX]?)[%da-fA-F]+)/?(%d*)$',
@@ -26,32 +34,31 @@ math, string, bit, table = nil, nil, nil, nil
 
 local special_ranges = {
   ipv4 = {
-    unspecified = {{octets={0, 0, 0, 0},         _cidr=8}},
-    broadcast   = {{octets={255, 255, 255, 255}, _cidr=32}},
-    multicast   = {{octets={224, 0, 0, 0},       _cidr=4}},
-    linkLocal   = {{octets={169, 254, 0, 0},     _cidr=16}},
-    loopback    = {{octets={127, 0, 0, 0},       _cidr=8}},
-    private     = {
-      {octets={10, 0, 0, 0},    _cidr=8}, {octets={172, 16, 0, 0}, _cidr=12}, 
+    {'unspecified', octets={0, 0, 0, 0},         _cidr=8},
+    {'broadcast',   octets={255, 255, 255, 255}, _cidr=32},
+    {'multicast',   octets={224, 0, 0, 0},       _cidr=4},
+    {'linkLocal',   octets={169, 254, 0, 0},     _cidr=16},
+    {'loopback',    octets={127, 0, 0, 0},       _cidr=8},
+    {
+      'private', {octets={10, 0, 0, 0}, _cidr=8}, {octets={172, 16, 0, 0}, _cidr=12},
       {octets={192, 168, 0, 0}, _cidr=16}
-    },
-    reserved    = {
-      {octets={192, 0, 0, 0},   _cidr=24}, {octets={192, 0, 2, 0},    _cidr=24},
-      {octets={192, 88, 99, 0}, _cidr=24}, {octets={198, 51, 100, 0}, _cidr=24},
-      {octets={203, 0, 113, 0}, _cidr=24}, {octets={240, 0, 0, 0},    _cidr=4}
+    }, {
+      'reserved', {octets={192, 0, 0, 0}, _cidr=24}, {octets={192, 0, 2, 0},    _cidr=24},
+      {octets={192, 88, 99, 0}, _cidr=24},           {octets={198, 51, 100, 0}, _cidr=24},
+      {octets={203, 0, 113, 0}, _cidr=24},           {octets={240, 0, 0, 0},    _cidr=4}
     }
   }, ipv6 = {
-    unspecified = {parts={0, 0, 0, 0, 0, 0, 0, 0},           _cidr=128},
-    linkLocal   = {parts={0xfe80, 0, 0, 0, 0, 0, 0, 0},      _cidr=10},
-    multicast   = {parts={0xff00, 0, 0, 0, 0, 0, 0, 0},      _cidr=8},
-    loopback    = {parts={0, 0, 0, 0, 0, 0, 0, 1},           _cidr=128},
-    uniqueLocal = {parts={0xfc00, 0, 0, 0, 0, 0, 0, 0},      _cidr=7},
-    ipv4Mapped  = {parts={0, 0, 0, 0, 0, 0xffff, 0, 0},      _cidr=96},
-    rfc6145     = {parts={0, 0, 0, 0, 0xffff, 0, 0, 0},      _cidr=96},
-    rfc6052     = {parts={0x64, 0xff9b, 0, 0, 0, 0, 0, 0},   _cidr=96},
-    ['6to4']    = {parts={0x2002, 0, 0, 0, 0, 0, 0, 0},      _cidr=16},
-    teredo      = {parts={0x2001, 0, 0, 0, 0, 0, 0, 0},      _cidr=32},
-    reserved    = {{parts={0x2001, 0xdb8, 0, 0, 0, 0, 0, 0}, _cidr=32}}
+    {'unspecified', parts={0, 0, 0, 0, 0, 0, 0, 0},          _cidr=128},
+    {'linkLocal',   parts={0xfe80, 0, 0, 0, 0, 0, 0, 0},     _cidr=10},
+    {'multicast',   parts={0xff00, 0, 0, 0, 0, 0, 0, 0},     _cidr=8},
+    {'loopback',    parts={0, 0, 0, 0, 0, 0, 0, 1},          _cidr=128},
+    {'uniqueLocal', parts={0xfc00, 0, 0, 0, 0, 0, 0, 0},     _cidr=7},
+    {'ipv4Mapped',  parts={0, 0, 0, 0, 0, 0xffff, 0, 0},     _cidr=96},
+    {'rfc6145',     parts={0, 0, 0, 0, 0xffff, 0, 0, 0},     _cidr=96},
+    {'rfc6052',     parts={0x64, 0xff9b, 0, 0, 0, 0, 0, 0},  _cidr=96},
+    {'6to4',        parts={0x2002, 0, 0, 0, 0, 0, 0, 0},     _cidr=16},
+    {'teredo',      parts={0x2001, 0, 0, 0, 0, 0, 0, 0},     _cidr=32},
+    {'reserved',    parts={0x2001, 0xdb8, 0, 0, 0, 0, 0, 0}, _cidr=32}
   }
 }
 
@@ -120,24 +127,29 @@ end
 
 -- funct address named range matching
 --
--- @table  addre @ssreturn string
+-- @table  address
 -- @table  range_list
--- @string default_nam
+-- @string default_name
 -- @return string
 
 local function subnet_match(address, range_list, default_name)
-  default_name = default_name or 'unicast'
-  local range_subnets, subnet
-  for range_name, range_subnets in pairs(range_list) do
-    range_subnets = type(range_subnets[1])=='table' and range_subnets or {range_subnets}
-    for j = 1, #range_subnets do
-      subnet = range_subnets[j]
+  local subnet = {}
+  for i = 1, #range_list do
+    subnet = range_list[i]
+    if #subnet == 1 then
       if address:match(subnet) then
-        return range_name
+        return subnet[1]
+      end
+    else
+      for j = 2, #subnet do
+        if address:match(subnet[j]) then
+          return subnet[1]
+        end
       end
     end
   end
-  return default_name
+
+  return default_name or 'unicast'
 end
 
 -- parse IP version 4 
@@ -218,7 +230,7 @@ local function parse_v6(string, parts, octets, cidr)
       end
     end
 
-    insert(parts, tonumber(part == EMPTY and 0 or part, 16))
+    insert(parts, tonumber(part == EMPTY and '0' or part, 16))
 
     l_sep, count, index, last, sep, part, nd_sep =
       nd_sep == COLON, count + 1, find(string, _part, last + 1)

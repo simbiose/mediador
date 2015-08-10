@@ -5,8 +5,18 @@
 -- @license   MIT
 -- @copyright Simbiose 2015
 
-local string, table, math, bit, ip_addr =
-  require [[string]], require [[table]], require [[math]], require [[bit]], require [[ip]]
+local string, table, math, ip_addr, bit_available, bit =
+  require [[string]], require [[table]], require [[math]], require [[ip]], pcall(require, 'bit')
+
+-- yey! Lua 5.3 bitwise keywords available
+if _VERSION == 'Lua 5.3' then
+  bit = not bit_available and {} or bit
+  assert(load([[
+    math.pow   = function (a, b) return a ^ b end
+    bit.band   = bit.band or function (a, b) return a & b end
+    bit.lshift = bit.lshift ot function (a, b) return a << b end
+  ]], nil, nil, {bit = bit, math = math}))()
+end
 
 local assert, setmetatable, format, find, match, gmatch, insert, remove, pow, band, lshift,
   isip, parse_ip =
